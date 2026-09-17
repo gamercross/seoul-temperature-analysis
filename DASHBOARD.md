@@ -1,6 +1,8 @@
 # [보너스] 서울 기온 대시보드 서비스화
 
-REPORT.md의 분석 결과를 기간/집계 단위/이동평균 윈도우를 바꿔가며 직접 탐색할 수 있는 Streamlit 대시보드입니다. (제출 방식: 로컬 실행 화면 + 실행 방법 문서 + 필터 변경 시나리오 설명)
+REPORT.md의 분석 결과를 기간/집계 단위/이동평균 윈도우를 바꿔가며 직접 탐색할 수 있는 Streamlit 대시보드입니다.
+
+**배포 URL**: https://seoul-temperature-analysis-7mezbcbxgbhqhf5wqueejf.streamlit.app/
 
 ## 실행 방법
 
@@ -56,9 +58,9 @@ streamlit run scripts/dashboard.py
 4. **Deploy** 클릭 → 1~2분 뒤 `https://<app-name>.streamlit.app` 형태의 공개 URL 생성
 5. 이후 `main`에 새 커밋이 머지될 때마다 자동으로 재배포됨
 
-레포에 있는 `runtime.txt`(Python 3.11 고정)와 `requirements.txt`를 그대로 사용하므로 별도 설정 없이 바로 배포된다. 배포된 URL은 이 섹션에 추가해 두면 된다:
+레포에 있는 `runtime.txt`(Python 3.11 고정)와 `requirements.txt`를 그대로 사용하므로 별도 설정 없이 바로 배포된다.
 
-> 배포 URL: _(배포 후 여기에 추가)_
+> **배포 URL**: https://seoul-temperature-analysis-7mezbcbxgbhqhf5wqueejf.streamlit.app/
 
 ## 알아둘 점
 
