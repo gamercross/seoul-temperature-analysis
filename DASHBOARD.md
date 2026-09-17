@@ -46,6 +46,20 @@ streamlit run scripts/dashboard.py
 
 모든 스크린샷은 Playwright로 실행 중인 로컬 대시보드(`localhost:8501`)를 직접 조작해 캡처했다 — 슬라이더 키보드 조작, 라디오 버튼 클릭, 스크롤이 실제로 반영된 결과다.
 
+## 배포 (Streamlit Community Cloud)
+
+무료로 공개 URL을 받을 수 있는 가장 간단한 방법입니다. GitHub 로그인이 필요한 단계라 사용자가 직접 진행해야 합니다.
+
+1. https://share.streamlit.io 접속 후 GitHub 계정으로 로그인
+2. **New app** 클릭
+3. Repository: `gamercross/seoul-temperature-analysis`, Branch: `main`, Main file path: `scripts/dashboard.py` 입력
+4. **Deploy** 클릭 → 1~2분 뒤 `https://<app-name>.streamlit.app` 형태의 공개 URL 생성
+5. 이후 `main`에 새 커밋이 머지될 때마다 자동으로 재배포됨
+
+레포에 있는 `runtime.txt`(Python 3.11 고정)와 `requirements.txt`를 그대로 사용하므로 별도 설정 없이 바로 배포된다. 배포된 URL은 이 섹션에 추가해 두면 된다:
+
+> 배포 URL: _(배포 후 여기에 추가)_
+
 ## 알아둘 점
 
 - `slider`로 고른 날짜 범위 밖 데이터는 카드/그래프 계산에서 완전히 제외됩니다(부분 포함 없음).
