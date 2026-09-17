@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  reproduce-and-test:
+    runs-on: ubuntu-latest
+    env:
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run unit tests
+        run: pytest tests/ -v
+
+      - name: Fetch data (reproducibility check)
+        run: python3 scripts/fetch_data.py
+
+      - name: Run analysis pipeline (reproducibility check)
+        run: python3 scripts/analysis.py
+
+      - name: Upload generated visualizations
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-images
+          path: images/*.png
+          retention-days: 7

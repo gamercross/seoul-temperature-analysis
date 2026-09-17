@@ -13,6 +13,8 @@ from plotly.subplots import make_subplots
 import streamlit as st
 from statsmodels.tsa.seasonal import STL
 
+from ts_utils import extreme_day_counts, precipitation_summary, seasonal_naive_forecast, forecast_errors
+
 st.set_page_config(page_title="서울 기온 시계열 대시보드", layout="wide")
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "seoul_daily_temperature_2023_2024.csv"
@@ -77,6 +79,14 @@ with tab_explore:
     col2.metric("최고기온", f"{filtered['temp_max'].max():.1f} °C")
     col3.metric("최저기온", f"{filtered['temp_min'].min():.1f} °C")
     col4.metric("변동성(표준편차)", f"{filtered['temp_mean'].std():.2f} °C")
+
+    extreme = extreme_day_counts(filtered["temp_max"], filtered["temp_min"])
+    precip = precipitation_summary(filtered["precipitation"])
+    e1, e2, e3, e4 = st.columns(4)
+    e1.metric("폭염일수 (33°C↑)", f"{extreme['heat_days']}일")
+    e2.metric("한파일수 (-12°C↓)", f"{extreme['cold_days']}일")
+    e3.metric("강수일수", f"{precip['rain_days']}일")
+    e4.metric("총강수량", f"{precip['total_precip']:.0f} mm")
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=plot_df.index, y=plot_df["temp_mean"], name=f"{agg_unit} 평균기온",
@@ -162,14 +172,14 @@ with tab_forecast:
 
     horizon = st.slider("검증 구간 길이 (최근 N일)", min_value=7, max_value=90, value=30, step=1)
 
-    naive_pred = df["temp_mean"].shift(365)
+    naive_pred = seasonal_naive_forecast(df["temp_mean"], period=365)
     eval_df = pd.DataFrame({
         "actual": df["temp_mean"],
         "predicted": naive_pred,
     }).dropna().tail(horizon)
 
-    mae = (eval_df["actual"] - eval_df["predicted"]).abs().mean()
-    rmse = np.sqrt(((eval_df["actual"] - eval_df["predicted"]) ** 2).mean())
+    errors = forecast_errors(eval_df["actual"], eval_df["predicted"])
+    mae, rmse = errors["mae"], errors["rmse"]
     baseline_mae = (eval_df["actual"] - eval_df["actual"].mean()).abs().mean()
 
     c1, c2, c3 = st.columns(3)

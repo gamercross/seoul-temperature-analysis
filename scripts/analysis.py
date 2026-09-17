@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from statsmodels.tsa.seasonal import STL
 
+from ts_utils import extreme_day_counts, precipitation_summary
+
 plt.rcParams["axes.unicode_minus"] = False
 try:
     plt.rcParams["font.family"] = "AppleGothic"
@@ -111,6 +113,48 @@ def make_visualizations(df, monthly):
     fig.savefig(f"{IMG_DIR}/03_rolling_volatility.png", dpi=150)
     plt.close(fig)
 
+def make_extreme_weather_visualizations(df):
+    # 시각화 5: 연도별 폭염일수(최고기온 33도↑) vs 한파일수(최저기온 -12도↓)
+    by_year = {}
+    for year, group in df.groupby(df.index.year):
+        by_year[year] = extreme_day_counts(group["temp_max"], group["temp_min"])
+    years = sorted(by_year.keys())
+    heat_days = [by_year[y]["heat_days"] for y in years]
+    cold_days = [by_year[y]["cold_days"] for y in years]
+
+    x = np.arange(len(years))
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.bar(x - 0.2, heat_days, width=0.4, color="#d1495b", label="폭염일수 (최고기온 33°C↑)")
+    ax.bar(x + 0.2, cold_days, width=0.4, color="#4c72b0", label="한파일수 (최저기온 -12°C↓)")
+    ax.set_xticks(x)
+    ax.set_xticklabels([str(y) for y in years])
+    ax.set_ylabel("일수")
+    ax.set_title("연도별 폭염일수 vs 한파일수")
+    ax.legend()
+    ax.grid(alpha=0.3, axis="y")
+    fig.tight_layout()
+    fig.savefig(f"{IMG_DIR}/05_extreme_days_by_year.png", dpi=150)
+    plt.close(fig)
+
+    # 시각화 6: 월별 총강수량
+    precip_monthly = df.groupby(df.index.to_period("M"))["precipitation"].sum()
+    precip_monthly.index = precip_monthly.index.to_timestamp()
+    colors = ["#4c72b0" if m.year == 2023 else "#dd8452" for m in precip_monthly.index]
+    fig, ax = plt.subplots(figsize=(11, 5))
+    ax.bar(precip_monthly.index, precip_monthly.values, width=20, color=colors)
+    ax.set_title("서울 월별 총강수량 (2023 vs 2024)")
+    ax.set_xlabel("월")
+    ax.set_ylabel("강수량 (mm)")
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    ax.grid(alpha=0.3, axis="y")
+    fig.tight_layout()
+    fig.savefig(f"{IMG_DIR}/06_monthly_precipitation.png", dpi=150)
+    plt.close(fig)
+
+    return by_year, precip_monthly
+
+
 def bonus_decomposition(df):
     # STL 시계열 분해 (추세 + 계절성 + 잔차), 주기=365(연간 계절성)
     stl = STL(df["temp_mean"], period=365, robust=True)
@@ -148,14 +192,18 @@ def print_insight_numbers(df, monthly):
     winter_2024 = df.loc["2024-12":"2024-12", "temp_mean"].mean()
     print("2023-12~2024-02 평균기온:", round(winter_2023, 2))
 
+    precip = precipitation_summary(df["precipitation"])
+    print("전체 강수일수:", precip["rain_days"], "/ 총강수량:", round(precip["total_precip"], 1), "mm")
+
 def main():
     df = load_and_clean()
     df, monthly = apply_time_series_techniques(df)
     make_visualizations(df, monthly)
+    make_extreme_weather_visualizations(df)
     bonus_decomposition(df)
     print_insight_numbers(df, monthly)
     df.to_csv("data/seoul_daily_temperature_processed.csv")
-    print("\n분석 완료. images/ 폴더에 4개 시각화 저장됨.")
+    print("\n분석 완료. images/ 폴더에 6개 시각화 저장됨.")
 
 if __name__ == "__main__":
     main()
